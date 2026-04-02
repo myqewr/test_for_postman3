@@ -50,7 +50,7 @@ jobs:
       - name: Run Collection - Demo API
         id: run_demo_api
         run: |
-          postman collection run "8D837Ced4cc4C4AF118eCB2F" 2>&1 | tee demo_api_result.txt
+          postman collection run "E45b7D74F0eaFFeDe12620E6" 2>&1 | tee demo_api_result.txt
           EXIT_CODE=${PIPESTATUS[0]}
           if [ $EXIT_CODE -eq 0 ]; then
             echo "result=success" >> $GITHUB_OUTPUT
@@ -103,4 +103,3 @@ jobs:
             exit 1
           else
             echo "All collections PASSED!"
-          fi

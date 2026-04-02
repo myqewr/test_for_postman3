@@ -1,6 +1,5 @@
 $kind: http-request
-name: 로그인하기
-url: localhost:8081/login
+url: 192.168.113.151:8081/login
 method: POST
 body:
   type: json
@@ -9,4 +8,8 @@ body:
         "loginId" : "admin",
         "password" : "admin"
     }
-order: 1775092261804
+scripts:
+  - type: afterResponse
+    code: pm.test("Status code is 200", function () {return true ; });
+    language: text/javascript
+order: 1000

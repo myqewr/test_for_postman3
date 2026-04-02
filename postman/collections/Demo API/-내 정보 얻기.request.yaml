@@ -1,0 +1,11 @@
+$kind: http-request
+name: "\b내 정보 얻기"
+url: localhost:8081/me/info
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "accessToken" : "accessToken"
+    }
+order: 2297897073090325

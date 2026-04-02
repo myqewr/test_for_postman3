@@ -1,0 +1,62 @@
+$kind: flow
+name: '로그인 → 내 정보 얻기 테스트'
+blocks:
+  - id: block-start
+    type: start
+    position:
+      x: 0
+      y: 200
+
+  - id: block-login-request
+    type: sendRequest
+    position:
+      x: 300
+      y: 200
+    data:
+      requestId: b5DD75BB5ea427Bd9DD5177D
+    inputs:
+      - name: send
+        from:
+          blockId: block-start
+          port: start
+
+  - id: block-evaluate-token
+    type: evaluate
+    position:
+      x: 600
+      y: 200
+    data:
+      code: 'return value1.accessToken;'
+    inputs:
+      - name: value1
+        from:
+          blockId: block-login-request
+          port: body
+
+  - id: block-me-info-request
+    type: sendRequest
+    position:
+      x: 900
+      y: 200
+    data:
+      requestId: 8AbDED55cC47ab9dDaE7E12E
+    inputs:
+      - name: send
+        from:
+          blockId: block-evaluate-token
+          port: output
+      - name: body.accessToken
+        from:
+          blockId: block-evaluate-token
+          port: output
+
+  - id: block-output
+    type: output
+    position:
+      x: 1200
+      y: 200
+    inputs:
+      - name: value1
+        from:
+          blockId: block-me-info-request
+          port: body

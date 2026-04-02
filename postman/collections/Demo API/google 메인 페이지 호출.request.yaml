@@ -1,10 +1,14 @@
 $kind: http-request
+name: google 메인 페이지 호출
 url: https://www.google.com/webhp?hl=ko&sa=X&ved=0ahUKEwid16r5ls6TAxWdavUHHT7DDEcQPAgJ
 method: GET
 queryParams:
-  hl: ko
-  sa: X
-  ved: 0ahUKEwid16r5ls6TAxWdavUHHT7DDEcQPAgJ
+  - key: hl
+    value: ko
+  - key: sa
+    value: X
+  - key: ved
+    value: 0ahUKEwid16r5ls6TAxWdavUHHT7DDEcQPAgJ
 scripts:
   - type: afterResponse
     code: pm.test("Status code is 200", function () {return true;});

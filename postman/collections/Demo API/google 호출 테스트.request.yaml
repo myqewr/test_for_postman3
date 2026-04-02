@@ -1,5 +1,5 @@
 $kind: http-request
-name: google 호출
+name: google 호출 테스트
 url: https://www.google.com/webhp?hl=ko&sa=X&ved=0ahUKEwid16r5ls6TAxWdavUHHT7DDEcQPAgJ
 method: GET
 queryParams:

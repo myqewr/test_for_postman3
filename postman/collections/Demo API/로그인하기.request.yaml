@@ -1,5 +1,6 @@
 $kind: http-request
-url: 192.168.113.151:8081/login
+name: 로그인하기
+url: localhost:8081/login
 method: POST
 body:
   type: json

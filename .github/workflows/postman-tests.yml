@@ -6,7 +6,7 @@ on:
 
 jobs:
   postman-tests:
-    name: Run Demo API Tests
+    name: Run All Collection Tests (Postman CLI)
     runs-on: ubuntu-latest
 
     steps:
@@ -40,75 +40,67 @@ jobs:
             sleep 2
           done
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install -g newman newman-reporter-htmlextra js-yaml
-
-      - name: Build Newman collection from YAML files
+      - name: Install Postman CLI
         run: |
-          node -e "
-          const fs = require('fs');
-          const yaml = require('js-yaml');
-          const path = require('path');
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
 
-          const collectionDir = 'postman/collections/Demo API';
-          const files = fs.readdirSync(collectionDir).filter(f => f.endsWith('.yaml'));
+      - name: Postman CLI Login
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
 
-          const items = files.map(file => {
-            const doc = yaml.load(fs.readFileSync(path.join(collectionDir, file), 'utf8'));
-            return {
-              name: doc.name,
-              request: {
-                method: doc.method,
-                header: [{ key: 'Content-Type', value: 'application/json' }],
-                url: {
-                  raw: 'http://' + doc.url,
-                  protocol: 'http',
-                  host: doc.url.split('/')[0].split(':'),
-                  path: doc.url.split('/').slice(1)
-                },
-                body: doc.body ? {
-                  mode: 'raw',
-                  raw: doc.body.content,
-                  options: { raw: { language: 'json' } }
-                } : undefined
-              },
-              event: [{
-                listen: 'test',
-                script: {
-                  type: 'text/javascript',
-                  exec: ['pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });']
-                }
-              }]
-            };
-          });
-
-          const collection = {
-            info: {
-              name: 'Demo API',
-              schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
-            },
-            item: items
-          };
-
-          fs.writeFileSync('postman-collection.json', JSON.stringify(collection, null, 2));
-          console.log('Collection built with', items.length, 'requests');
-          "
-
-      - name: Run Postman Tests with Newman
+      - name: Run Collection - Demo API
+        id: run_demo_api
         run: |
-          newman run postman-collection.json \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export newman-report.html \
-            --timeout-request 10000
+          postman collection run "Demo API" 2>&1 | tee demo_api_result.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+          fi
+          exit $EXIT_CODE
+        continue-on-error: true
 
-      - name: Upload Test Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-test-report
-          path: newman-report.html
+      - name: Run Collection - Demo2
+        id: run_demo2
+        run: |
+          postman collection run "Demo2" 2>&1 | tee demo2_result.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+          fi
+          exit $EXIT_CODE
+        continue-on-error: true
+
+      - name: Print Test Results Summary
+        run: |
+          echo "========================================"
+          echo "         TEST RESULTS SUMMARY"
+          echo "========================================"
+          echo ""
+
+          echo "[ Demo API ]"
+          if [ "${{ steps.run_demo_api.outputs.result }}" = "success" ]; then
+            echo "  Result : SUCCESS"
+          else
+            echo "  Result : FAILURE"
+          fi
+          echo ""
+
+          echo "[ Demo2 ]"
+          if [ "${{ steps.run_demo2.outputs.result }}" = "success" ]; then
+            echo "  Result : SUCCESS"
+          else
+            echo "  Result : FAILURE"
+          fi
+          echo ""
+          echo "========================================"
+
+          if [ "${{ steps.run_demo_api.outputs.result }}" != "success" ] || \
+             [ "${{ steps.run_demo2.outputs.result }}" != "success" ]; then
+            echo "One or more collections FAILED. Marking workflow as failed."
+            exit 1
+          else
+            echo "All collections PASSED!"
+          fi

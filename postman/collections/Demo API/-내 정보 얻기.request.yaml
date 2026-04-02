@@ -1,6 +1,6 @@
 $kind: http-request
 name: "\b내 정보 얻기"
-url: 192.168.113.151:8081/me/info
+url: localhost:8081/me/info
 method: POST
 body:
   type: json
